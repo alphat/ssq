@@ -17,54 +17,53 @@
     ul:last-child li button{border-color: #1E7DDF; }
     ul li.active button{background-color: #F00; color:#fff;}
     ul:last-child li.active button{background-color: #1E7DDF;}
+    .result{ display: inline-block; width: 46%; float: left; padding: 2%;}
   </style>
 </head>
 
 <body>
   <div id="app">
     <div>
-    <ul>
-      <li
-        is="ball-btn"
-        v-for="ball in 33"
-        :num="ball"
-        :key="ball"
-        :balls="myBalls"
-        :rball="redBall"
-        type="blue"
-        v-on:select-ball="onSelectBall"
-      ></li>
-    </ul>
-    <ul>
-      <li
-        is="ball-btn"
-        v-for="ball in 16"
-        :key="ball"
-        type="red"
-        :num="ball"
-        :balls="myBalls"
-        :rball="redBall"
-        v-on:select-ball="onSelectBall"
-      ></li>
-    </ul>
+      <ul>
+        <li
+          is="ball-btn"
+          v-for="n in 33"
+          type="red"
+          :key="n"
+          :num="n"
+          :balls="myBalls"
+          @select-ball="onSelectBall"
+        ></li>
+      </ul>
+      <ul>
+        <li
+          is="ball-btn"
+          v-for="n in 16"
+          type="blue"
+          :key="n"
+          :num="n"
+          :bball="blueBall"
+          @select-ball="onSelectBall"
+        ></li>
+      </ul>
     </div>
-    <p v-for="(r,idx) in resultArr">{{priceName[idx]+": "+r+" 次"}}</p>   
+    <p class="result" v-for="(r,idx) in resultArr">{{priceName[idx]+": "+r+" 次"}}</p>   
   </div>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
   <script src="./data.js"></script>
   <script>
     Vue.component('ball-btn', {
-      props:['type','num','balls','rball'],
+      props:['type','num','balls','bball'],
       data: function () {
         return {
-          oldBtn:undefined,
+          redtn:undefined,
           selected: false
         }
       },
       methods: {
         selectBall:function(num,e){
-          if (this.type==="blue"){
+          if (this.type==="red"){
             var ol = this.balls.length;
             this.$emit('select-ball',num);
             if(ol !== this.balls.length){
@@ -77,14 +76,13 @@
       },
       computed:{
         liActive:function(){
-          if(this.type==="blue"){
+          if(this.type==="red"){
             if(this.selected){
               return 'active';
             }
           }else{
-            return (this.rball!==this.num) ? '':'active';
+            return (this.bball!==this.num) ? '':'active';
           }
-          //type===\'blue\' ? { active: selected } : (resultNum === index? active : null)
         }
       },
       template: '<li :class="liActive" @click="selectBall(num,$event)"><button>{{num}}</button></li>'
@@ -94,13 +92,13 @@
       el:'#app',
       data:{
         myBalls:[],
-        redBall:'',
+        blueBall:'',
         priceName:["一等奖","二等奖","三等奖","四等奖","五等奖","六等奖"]
       },
       methods: {
         onSelectBall: function (num,type) {
-          if(type==="red"){
-            this.redBall = (this.redBall === num)?'':num;
+          if(type==="blue"){
+            this.blueBall = (this.blueBall === num)?'':num;
           }else{
             var ol = this.myBalls.length;
             _.pull(this.myBalls,num)
@@ -118,140 +116,53 @@
         resultArr:function(){
           var arr=[];
           for(var i=0;i<6;i++){
-            if(this.myBalls[i]){
-              arr[i] = this.myBalls[i]
-            }else{
-              arr[i] = '';
-            }
+            var tmp = this.myBalls[i];
+            arr[i] = tmp ? tmp : '';
           }
-          arr[6]=this.redBall;
-          
+          arr[6]=this.blueBall;          
           return checkCount(arr);
         }
       }
     })
 
-   //exit();
-
-    //var myBalls = ["06","12","14","20","22","24","09"];
-    //checkCount(myBalls);
-
     function checkCount(my){
-      console.log(my)
       var bingos = [0,0,0,0,0,0];
       for(var i=0; i<ssqData.length;i++){
         var txt=" - ";
-        var blueCount = 0;
-        var redBingo = padZero(ssqData[i][7],2)===my[6];
-        var redCount = redBingo?1:0;
+        var redCount = 0;
+        var blueBingo = ssqData[i][7]===my[6];
+        var blueCount = blueBingo?1:0;
         for(var j=1;j<ssqData[i].length-1;j++){
             for(var k=0;k<my.length-1;k++){
-              if(padZero(ssqData[i][j],2)===my[k]){
+              if(ssqData[i][j]===my[k]){
                   txt+=my[k]+",";
-                  blueCount++
+                  redCount++
               }
             }
         }
-        if(redBingo){
+        if(blueBingo){
           txt+=my[6]+"|";
         }
-        var allCount = blueCount+redCount;
+        var allCount = redCount+blueCount;
         if(allCount===7){
           bingos[0]++;
         }else if(allCount===6){
-          redBingo ? bingos[2]++ : bingos[1]++;
-        }/*else if(allCount===5 && allCount===4){
-          bingos[8-allCount]++;
-        }*/else if(allCount===5){
+          blueBingo ? bingos[2]++ : bingos[1]++;
+        }else if(allCount===5){
           bingos[3]++;
         }else if(allCount===4){
           bingos[4]++;
         }else{
-          redBingo ? bingos[5]++ : null;
+          blueBingo ? bingos[5]++ : null;
         }
         if(allCount>3){
           console.log(ssqData[i].toString()+txt+"==="+allCount);
         }
 
-
-        // if(blueCount===6){
-        //   redBingo ? bingos[0]++ : bingos[1]++;
-        // }else if(blueCount===5){
-        //   redBingo ? bingos[2]++ : null;
-        // }
-        // if(allCount>=6){
-
-        // }
-        // if(blueCount+redCount===3){
-        //   console.log(ssqData[i].toString()+txt);
-        // }
       }
       return bingos;
 
     }
-
-    function padZero(n,l){
-      return n;
-      var p = '';
-      for(var i=0;i<l;i++){
-        p+='0';
-      }
-      return (p+n).slice(-2)+'';
-    }
-
-    /*var my = [4,10,14,18,28,32,15];
-    var tmpArr=[];
-
-    for(var i=0; i<ssqData.length;i++){
-      var tmp = ssqData[i];
-      var tmp1 = tmp.slice(1,8);
-      //console.log(tmp1);
-      if(checkCount(tmp1,ssqData)>2){
-        var tmp2 = tmp1.splice(0,0,tmp[0])
-        tmpArr.push(tmp1)
-      }
-    }
-    for(var i=0; i<tmpArr.length;i++){
-      var tmp = tmpArr[i];
-      var tmp1 = tmp.slice(1,8);
-      console.log(checkCount(tmp1,tmpArr));
-
-    }
-
-
-    function checkCount(my,ssqData){
-      var tCount = 0;
-      for(var i=0; i<ssqData.length;i++){
-        var txt=" - ";
-        var count = 0;
-        for(var j=1;j<ssqData[i].length-1;j++){
-            for(var k=0;k<my.length-1;k++){
-              if(padZero(ssqData[i][j])===my[k]){
-                  txt+=my[k]+",";
-                  count++
-              }
-            }
-        }
-        if(padZero(ssqData[i][7])===my[6]){
-            txt+=my[6]+"|";
-            count++;
-        }
-        if(count>4){
-          tCount++;
-          if (ssqData.length<1000){
-            console.log(ssqData[i].toString()+txt);
-          }
-        }
-      }
-      return tCount;
-    }
-
-    function padZero(n){
-      return n;
-      //return ('00'+n).slice(-2);
-    }
-
-    console.log(ssqData.length)*/
   </script>
   <!-- Global site tag (gtag.js) - Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-123784264-2"></script>
