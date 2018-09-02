@@ -7,17 +7,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0" />
   <title>双色球</title>
   <style>
-    *{margin: 0;padding: 0;}
-    ul{margin: 0 auto 20px; overflow: hidden;}
-    ul li{float: left;list-style: none;}
-    li button{
-      display: inline-block; width: 35px; height: 35px; line-height: 35px;text-align: center; border: 1px solid #F00; background-color: #eee;
-      margin: 7px;color: #333;border-radius: 25px;text-decoration: none;cursor: pointer;
-    }
-    ul:last-child li button{border-color: #1E7DDF; }
-    ul li.active button{background-color: #F00; color:#fff;}
-    ul:last-child li.active button{background-color: #1E7DDF;}
-    .result{ display: inline-block; width: 46%; float: left; padding: 2%;}
+    * {margin: 0;padding: 0;}
+    ul {margin: 0 auto 20px;overflow: hidden;}
+    ul li {float: left;list-style: none;}
+    li button {display: inline-block;width: 35px;height: 35px;line-height: 35px;text-align: center;border: 1px solid #F00;background-color: #eee;
+               margin: 7px;color: #333;border-radius: 25px;text-decoration: none;cursor: pointer;}
+    ul:last-child li button {border-color: #1E7DDF;}
+    ul li.active button {background-color: #F00;color: #fff;}
+    ul:last-child li.active button {background-color: #1E7DDF;}
+    .result {display: inline-block;width: 46%;float: left;padding: 2%;}
   </style>
 </head>
 
@@ -31,7 +29,8 @@
           type="red"
           :key="n"
           :num="n"
-          :balls="myBalls"
+          :blue-ball="blueBall"
+          :red-Balls="redBalls"
           @select-ball="onSelectBall"
         ></li>
       </ul>
@@ -42,136 +41,128 @@
           type="blue"
           :key="n"
           :num="n"
-          :bball="blueBall"
-          @select-ball="onSelectBall"
-        ></li>
+          :blue-ball="blueBall"
+          :red-Balls="redBalls"
+          @select-ball="onSelectBall">
+        </li>
       </ul>
     </div>
-    <p class="result" v-for="(r,idx) in resultArr">{{priceName[idx]+": "+r+" 次"}}</p>   
+    <p class="result" v-for="(r,idx) in resultArr">{{priceName[idx]+": "+r+" 次"}}</p>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
   <script src="./data.js"></script>
   <script>
     Vue.component('ball-btn', {
-      props:['type','num','balls','bball'],
+      props: ['type', 'num', 'red-Balls', 'blue-ball'],
       data: function () {
         return {
-          redtn:undefined,
           selected: false
         }
       },
       methods: {
-        selectBall:function(num,e){
-          if (this.type==="red"){
-            var ol = this.balls.length;
-            this.$emit('select-ball',num);
-            if(ol !== this.balls.length){
-              this.selected = !this.selected;
-            }
-          }else{
-            this.$emit('select-ball',num,this.type);        
+        selectBall: function (num) {
+          var ol = this.redBalls.length;
+          this.$emit('select-ball', num, this.type);
+          if (ol !== this.redBalls.length) {
+            this.selected = !this.selected;
           }
         }
       },
-      computed:{
-        liActive:function(){
-          if(this.type==="red"){
-            if(this.selected){
-              return 'active';
-            }
-          }else{
-            return (this.bball!==this.num) ? '':'active';
-          }
+      computed: {
+        liActive: function () {
+          return {
+            'active': (this.type === "red" && this.selected) || (this.type === "blue" && this.blueBall === this.num)
+          };
         }
       },
-      template: '<li :class="liActive" @click="selectBall(num,$event)"><button>{{num}}</button></li>'
+      template: '<li :class="liActive" @click="selectBall(num)"><button>{{num}}</button></li>'
     })
 
     new Vue({
-      el:'#app',
-      data:{
-        myBalls:[],
-        blueBall:'',
-        priceName:["一等奖","二等奖","三等奖","四等奖","五等奖","六等奖"]
+      el: '#app',
+      data: {
+        redBalls: [],
+        blueBall: '',
+        priceName: ["一等奖", "二等奖", "三等奖", "四等奖", "五等奖", "六等奖"]
       },
       methods: {
-        onSelectBall: function (num,type) {
-          if(type==="blue"){
-            this.blueBall = (this.blueBall === num)?'':num;
-          }else{
-            var ol = this.myBalls.length;
-            _.pull(this.myBalls,num)
-            if(ol === this.myBalls.length && this.myBalls.length<6){
-              this.myBalls.push(num);
+        onSelectBall: function (num, type) {
+          if (type === "blue") {
+            this.blueBall = (this.blueBall === num) ? '' : num;
+          } else {
+            var ol = this.redBalls.length;
+            // 删除已存在的元素
+            _.pull(this.redBalls, num)
+            if (ol === this.redBalls.length && this.redBalls.length < 6) {
+              this.redBalls.push(num);
             };
-            this.myBalls.sort(function (m, n) {
-              return m-n; // 正序
+            // 正排序
+            this.redBalls.sort(function (m, n) {
+              return m - n; 
             });
-          }          
+          }
         }
       },
-
-      computed:{
-        resultArr:function(){
-          var arr=[];
-          for(var i=0;i<6;i++){
-            var tmp = this.myBalls[i];
+      computed: {
+        resultArr: function () {
+          var arr = [];
+          // 还没有选的红球用空填充
+          for (var i = 0; i < 6; i++) {
+            var tmp = this.redBalls[i];
             arr[i] = tmp ? tmp : '';
           }
-          arr[6]=this.blueBall;          
+          // 填充蓝号号码
+          arr[6] = this.blueBall;
           return checkCount(arr);
         }
       }
     })
 
-    function checkCount(my){
-      var bingos = [0,0,0,0,0,0];
-      for(var i=0; i<ssqData.length;i++){
-        var txt=" - ";
+    function checkCount(check) {
+      var bingos = [0, 0, 0, 0, 0, 0];
+      for (var i = 0; i < ssqData.length; i++) {
+        var txt = " - ";
         var redCount = 0;
-        var blueBingo = ssqData[i][7]===my[6];
-        var blueCount = blueBingo?1:0;
-        for(var j=1;j<ssqData[i].length-1;j++){
-            for(var k=0;k<my.length-1;k++){
-              if(ssqData[i][j]===my[k]){
-                  txt+=my[k]+",";
-                  redCount++
-              }
+        var blueBingo = ssqData[i][7] === check[6];
+        for (var j = 1; j < ssqData[i].length - 1; j++) {
+          for (var k = 0; k < check.length - 1; k++) {
+            if (ssqData[i][j] === check[k]) {
+              txt += check[k] + ",";
+              redCount++
             }
+          }
         }
-        if(blueBingo){
-          txt+=my[6]+"|";
+        if (blueBingo) {
+          txt += check[6] + "|";
         }
-        var allCount = redCount+blueCount;
-        if(allCount===7){
-          bingos[0]++;
-        }else if(allCount===6){
-          blueBingo ? bingos[2]++ : bingos[1]++;
-        }else if(allCount===5){
-          bingos[3]++;
-        }else if(allCount===4){
-          bingos[4]++;
-        }else{
-          blueBingo ? bingos[5]++ : null;
+        var allCount = redCount + Number(blueBingo);
+        if (allCount === 7) {
+          bingos[0] = 1;                            // 7颗全中为一等奖
+        } else if (allCount === 6) {
+          blueBingo ? bingos[2]++ : bingos[1]++;    // 6颗红球为二等奖，5红1蓝为三等奖
+        } else if (allCount === 5) {
+          bingos[3]++;                              // 中5颗为四等奖
+        } else if (allCount === 4) {
+          bingos[4]++;                              // 中4颗为五等奖
+        } else {
+          blueBingo ? bingos[5]++ : null;           // 只中蓝球六等奖
         }
-        if(allCount>3){
-          console.log(ssqData[i].toString()+txt+"==="+allCount);
+        if (allCount > 3) {
+          console.log(ssqData[i].toString() + txt + "===" + allCount);
         }
-
       }
       return bingos;
-
     }
   </script>
   <!-- Global site tag (gtag.js) - Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-123784264-2"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
-
     gtag('config', 'UA-123784264-2');
   </script>
 </body>
+
 </html>
