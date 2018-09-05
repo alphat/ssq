@@ -27,30 +27,8 @@
 <body>
   <div id="app">
     <div>
-      <ul>
-        <li
-          is="ball-btn"
-          v-for="n in 33"
-          type="red"
-          :key="n"
-          :num="n"
-          :blue-ball="blueBall"
-          :red-Balls="redBalls"
-          @select-ball="onSelectBall"
-        ></li>
-      </ul>
-      <ul>
-        <li
-          is="ball-btn"
-          v-for="n in 16"
-          type="blue"
-          :key="n"
-          :num="n"
-          :blue-ball="blueBall"
-          :red-Balls="redBalls"
-          @select-ball="onSelectBall">
-        </li>
-      </ul>
+      <ball-list type="red" @result="onResult"></ball-list>
+      <ball-list type="blue" @result="onResult"></ball-list>
     </div>
     <div class="result">
       <p v-for="(r,idx) in resultArr">{{priceName[idx]+": "+r+" 次"}}</p>
@@ -60,8 +38,49 @@
   <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
   <script src="./data.js"></script>
   <script>
+    Vue.component('ball-list', {
+      props: ['type'],
+      data: function () {
+        return {
+          blueBall: '',
+          redBalls:[]
+        }
+      },
+      methods: {
+        onSelectBall: function (num, type) {
+          if (type === "blue") {
+            this.blueBall = (this.blueBall === num) ? '' : num;
+            this.$emit('result',this.blueBall);
+          } else {
+            var ol = this.redBalls.length;
+            // 删除已存在的元素
+            _.pull(this.redBalls, num)
+            if (ol === this.redBalls.length && this.redBalls.length < 6) {
+              this.redBalls.push(num);
+            };
+            // 正排序
+            this.redBalls.sort(function (m, n) {
+              return m - n; 
+            });
+            this.$emit('result',this.redBalls);
+          }
+        }
+      },
+      template: `<ul>
+        <li
+          is="ball-btn"
+          v-for="n in (type==='red'?33:16)"
+          :type="type"
+          :key="n"
+          :num="n"
+          :blueBall="blueBall"
+          :redBalls="redBalls"
+          @select-ball="onSelectBall">
+        </li>
+      </ul>`
+    })
     Vue.component('ball-btn', {
-      props: ['type', 'num', 'red-Balls', 'blue-ball'],
+      props: ['type', 'num', 'blueBall','redBalls'],
       data: function () {
         return {
           selected: false
@@ -88,40 +107,25 @@
 
     new Vue({
       el: '#app',
-      data: {
-        redBalls: [],
-        blueBall: '',
+      data:{
+        countArr:[0,0,0,0,0,0,0],
         priceName: ["一等奖", "二等奖", "三等奖", "四等奖", "五等奖", "六等奖"]
       },
       methods: {
-        onSelectBall: function (num, type) {
-          if (type === "blue") {
-            this.blueBall = (this.blueBall === num) ? '' : num;
-          } else {
-            var ol = this.redBalls.length;
-            // 删除已存在的元素
-            _.pull(this.redBalls, num)
-            if (ol === this.redBalls.length && this.redBalls.length < 6) {
-              this.redBalls.push(num);
-            };
-            // 正排序
-            this.redBalls.sort(function (m, n) {
-              return m - n; 
-            });
+        onResult:function(result){
+          if(typeof result === 'object'){
+            for (var i = 0; i < 6; i++) {
+              var tmp = result[i];
+              this.countArr.splice(i,1,(tmp ? tmp : 0));
+            }
+          }else{
+            this.countArr.splice(6,1,result);
           }
         }
       },
       computed: {
         resultArr: function () {
-          var arr = [];
-          // 还没有选的红球用空填充
-          for (var i = 0; i < 6; i++) {
-            var tmp = this.redBalls[i];
-            arr[i] = tmp ? tmp : '';
-          }
-          // 填充蓝号号码
-          arr[6] = this.blueBall;
-          return checkCount(arr);
+          return checkCount(this.countArr);
         }
       }
     })
