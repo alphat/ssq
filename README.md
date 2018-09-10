@@ -1,2 +1,3 @@
 # ssq
-数据载止 2018年8月底
+数据来源：http://www.17500.cn/getData/ssq.TXT
+跨域解决方案：https://bird.ioliu.cn/
