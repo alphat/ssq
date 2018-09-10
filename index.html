@@ -8,6 +8,7 @@
   <title>双色球</title>
   <style>
     * {margin: 0;padding: 0;}
+    [v-cloak] {display: none;}
     ul {padding: 5px 4%;overflow: hidden;display: block}
     ul:first-child{border-bottom: 1px solid #f0f0f0;}
     ul li {float: left;list-style: none;width: 14%;text-align: center;}
@@ -26,7 +27,7 @@
 </head>
 
 <body>
-  <div id="app">
+  <div id="app" v-cloak v-if="pageLoadData">
     <div>
       <ball-list type="red" @result="onResult" :set-result="setResult"></ball-list>
       <ball-list type="blue" @result="onResult" :set-result="setResult"></ball-list>
@@ -38,8 +39,9 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
-  <script src="./data.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios@0.18.0/dist/axios.js"></script>
   <script>
+    var ssqData = [];
     Vue.component('ball-list', {
       props: ['type','setResult'],
       data: function () {
@@ -116,8 +118,6 @@
           this.liActive = (this.blueBall === this.num)?'active':'';
         },
         "redBalls":function(){
-          console.log(this.num)
-          console.log(this.redBalls);
           this.liActive = "";
           for(var i in this.redBalls){
             if(this.redBalls[i] === this.num){
@@ -126,22 +126,31 @@
           }
         }
       },
-      // computed: {
-      //   liActive: function () {
-      //     return {
-      //       'active': (this.type === "red" && this.selected) || (this.type === "blue" && this.blueBall === this.num)
-      //     };
-      //   }
-      // },
       template: '<li :class="liActive" @click="selectBall(num)"><button>{{num}}</button></li>'
     })
 
     new Vue({
       el: '#app',
       data:{
+        pageLoadData:false,
         setResult:[],
         countArr:[0,0,0,0,0,0,0],
         priceName: ["一等奖", "二等奖", "三等奖", "四等奖", "五等奖", "六等奖"]
+      },
+      mounted: function () {
+        var self = this;
+        axios.get('https://bird.ioliu.cn/v1?url=http://www.17500.cn/getData/ssq.TXT?format=json&idx=1&n=1')
+        .then(function (response) {
+          var tmpArr = response.data.split("\n");
+          for(var i=0; i<tmpArr.length;i++){
+            var tmpArr2 = tmpArr[i].split(" ");
+            ssqData[i] = [tmpArr2[0]*1,tmpArr2[2]*1,tmpArr2[3]*1,tmpArr2[4]*1,tmpArr2[5]*1,tmpArr2[6]*1,tmpArr2[7]*1,tmpArr2[8]*1];
+          }
+          self.pageLoadData = true;
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
       },
       methods: {
         onResult:function(result){
