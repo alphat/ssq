@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0" />
+  <title>双色球</title>
+  <style>
+    * {margin: 0;padding: 0;}
+    body{padding-bottom: 10px;}
+    [v-cloak] {display: none;}
+    ul {padding: 5px 4%;overflow: hidden;display: block}
+    ul:first-child{border-bottom: 1px solid #f0f0f0;}
+    ul li {float: left;list-style: none;width: 14%;text-align: center;}
+    li button {display: inline-block;width: 35px;height: 35px;line-height: 35px;text-align: center;border: 1px solid #F00;background-color: #eee;
+               margin: 7px;color: #333;border-radius: 25px;text-decoration: none;cursor: pointer;}
+    ul:last-child li button {border-color: #1E7DDF;}
+    ul li.active button {background-color: #F00;color: #fff;}
+    ul:last-child li.active button {background-color: #1E7DDF;}
+    .result p {display: inline-block;width: 27%;float: left;padding: 3%; font-size: 15px;}
+    @media (min-width: 600px){
+      ul, .result {width: 600px;margin-left:auto;margin-right: auto;}
+      .result {margin-top: 15px;}
+    }
+    .btn{ padding: 5px 10px; min-width: 80px;}
+  </style>
+</head>
+
+<body>
+  <div id="app" v-cloak v-if="pageLoadData">
+    <div>
+      <ball-list type="red" @result="onResult" :set-result="setResult"></ball-list>
+      <ball-list type="blue" @result="onResult" :set-result="setResult"></ball-list>
+    </div>
+    <div class="result">
+      <p v-for="(r,idx) in resultArr.allResult.bingos">{{priceName[idx]+": "+r+" 次"}}</p>
+      <p><button @click='randomResult' class="btn">随机</button></p>
+      <p><button @click='clearResult' class="btn">清空</button></p>
+      <p><button @click='randomInterval' class="btn">{{ranInterBtnTxt}}</button></p>
+    </div>
+    <div class="result">{{resultArr.randomCount+', '+resultPercent}}</div>
+    <div class="result">{{tempResultsArr}}</div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios@0.18.0/dist/axios.js"></script>
+  <script>
+    var ssqData = [];
+    Vue.component('ball-list', {
+      props: ['type','setResult'],
+      data: function () {
+        return {
+          blueBall: '',
+          redBalls:[]
+        }
+      },
+      methods: {
+        onSelectBall: function (num, type) {
+          if (type === "blue") {
+            this.blueBall = (this.blueBall === num) ? '' : num;
+            this.$emit('result',this.blueBall);
+          } else {
+            var ol = this.redBalls.length;
+            // 删除已存在的元素
+            _.pull(this.redBalls, num)
+            if (ol === this.redBalls.length && this.redBalls.length < 6) {
+              this.redBalls.push(num);
+            };
+            // 正排序
+            this.redBalls.sort(function (m, n) {
+              return m - n; 
+            });
+            this.$emit('result',this.redBalls);
+          }
+        }
+      },
+      watch:{
+        'setResult':function(){
+          if (this.type === "blue") {
+            this.blueBall = this.setResult[6];
+            this.$emit('result',this.blueBall);            
+          }else{
+            this.redBalls = [];
+            for(var i=0;i<6;i++){
+              if(this.setResult[i]){
+                this.redBalls.splice(i,1,this.setResult[i]);
+              }
+            }
+            this.$emit('result',this.redBalls);
+          }
+        }
+      },
+      template: `<ul>
+        <li
+          is="ball-btn"
+          v-for="n in (type==='red'?33:16)"
+          :type="type"
+          :key="n"
+          :num="n"
+          :blueBall="blueBall"
+          :redBalls="redBalls"
+          @select-ball="onSelectBall">
+        </li>
+      </ul>`
+    })
+    Vue.component('ball-btn', {
+      props: ['type', 'num', 'blueBall','redBalls'],
+      data: function () {
+        return {
+          selected: false,
+          liActive:''
+        }
+      },
+      methods: {
+        selectBall: function (num) {
+          var ol = this.redBalls.length;
+          this.$emit('select-ball', num, this.type);
+          if (ol !== this.redBalls.length) {
+            this.selected = !this.selected;
+          }
+        }
+      },
+      watch:{
+        "blueBall":function(){
+          this.liActive = (this.blueBall === this.num)?'active':'';
+        },
+        "redBalls":function(){
+          this.liActive = "";
+          for(var i in this.redBalls){
+            if(this.redBalls[i] === this.num){
+              this.liActive='active';
+            };
+          }
+        }
+      },
+      template: '<li :class="liActive" @click="selectBall(num)"><button>{{num}}</button></li>'
+    })
+
+    new Vue({
+      el: '#app',
+      data:{
+        pageLoadData:false,
+        setResult:[],
+        countArr:[],
+        priceName: ["一等奖", "二等奖", "三等奖", "四等奖", "五等奖", "六等奖"],
+        randomCount:0,
+        randomInt:null,
+        ranInterBtnTxt:'持续随机',
+        tempResultsArr:[],
+        resultsArr:[],
+        resultPercent:0
+      },
+      mounted: function () {
+        var self = this;
+        axios.get('https://bird.ioliu.cn/v1?url=http://www.17500.cn/getData/ssq.TXT?format=json&idx=1&n=1')
+        .then(function (response) {
+          var tmpArr = response.data.split("\n");
+          console.log(tmpArr.length);
+          for(var i=0; i<tmpArr.length;i++){
+            var tmpArr2 = tmpArr[i].split(" ");
+            ssqData[i] = [tmpArr2[0]*1,tmpArr2[2]*1,tmpArr2[3]*1,tmpArr2[4]*1,tmpArr2[5]*1,tmpArr2[6]*1,tmpArr2[7]*1,tmpArr2[8]*1];
+          }
+          self.pageLoadData = true;
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      },
+      methods: {
+        onResult:function(result){
+          if(typeof result === 'object'){
+            this.countArr = [];
+            for (var i = 0; i < 6; i++) {
+              var tmp = result[i];
+              this.countArr.splice(i,1,(tmp ? tmp : 0));
+            }
+            //this.countArr.splice(7,1,'red');
+          }else{
+            this.countArr.splice(6,1,result);
+            //this.countArr.splice(7,1,'blue');
+          }
+        },
+        randomResult:function(){
+          var arr = [];
+          while (arr.length<6){
+            var num=Math.ceil(33*Math.random());
+            if(arr.indexOf(num)==-1){
+                arr.push(num);
+            }
+          }
+          arr[6] = Math.ceil(16*Math.random());
+          this.setResult = arr;
+        },
+        randomResultInterval:function(){
+          var self = this;
+          this.randomResult();
+          setTimeout(function(){
+            //self.clearResult();
+          })
+          self.randomCount++;
+          this.randomInt = setTimeout(function(){
+            self.randomResultInterval();
+          })
+        },
+        clearResult:function(){
+          this.setResult = [];
+        },
+        randomInterval:function(){
+          var self = this;
+          if(this.ranInterBtnTxt==='持续随机' || this.ranInterBtnTxt==='继续'){
+            this.ranInterBtnTxt='暂停';
+
+            // this.randomInt = setInterval(function(){
+            //   self.randomResult();
+            //   self.randomCount++;
+            // },100)
+            this.randomResultInterval();
+          }else{
+            this.ranInterBtnTxt='继续';
+            clearTimeout(this.randomInt);
+          }
+        }
+      },
+      computed: {
+        resultArr: function () {
+          var result = checkCount(this.countArr);
+          if(result.record.length>=1){
+            for(var i in result.record){
+              this.tempResultsArr.push((result.record[i].data));  
+              this.tempResultsArr = this.tempResultsArr.filter(function(element,index,self){
+                return self.indexOf(element) === index;
+              });        
+            }
+            this.resultPercent = this.tempResultsArr.length / this.randomCount
+            //this.ranInterBtnTxt='继续';
+            //clearTimeout(this.randomInt);
+          }
+          return {
+            'allResult':result,
+            'randomCount': this.randomCount
+          };
+        }
+      }
+    })
+
+    function checkCount(check) {
+      if(check.length<7){
+        return {record:[]}
+      }
+      var bingos = [0, 0, 0, 0, 0, 0];
+      var record = [];
+      for (var i = 0; i < ssqData.length; i++) {
+        var txt = " - ";
+        var redCount = 0;
+        var blueBingo = ssqData[i][7] === check[6];
+        for (var j = 1; j < ssqData[i].length - 1; j++) {
+          for (var k = 0; k < check.length - 1; k++) {
+            if (ssqData[i][j] === check[k]) {
+              txt += check[k] + ",";
+              redCount++
+            }
+          }
+        }
+        if (blueBingo) {
+          txt += check[6] + "|";
+        }
+        var allCount = redCount + Number(blueBingo);
+        if (allCount === 7) {
+          bingos[0] = 1;                            // 7颗全中为一等奖
+        } else if (allCount === 6) {
+          blueBingo ? bingos[2]++ : bingos[1]++;    // 6颗红球为二等奖，5红1蓝为三等奖
+        } else if (allCount === 5) {
+          bingos[3]++;                              // 中5颗为四等奖
+        } else if (allCount === 4) {
+          bingos[4]++;                              // 中4颗为五等奖
+        } else {
+          blueBingo ? bingos[5]++ : null;           // 只中蓝球六等奖
+        }
+        if (allCount > 5) {
+          var no;
+          if(bingos[0]===1){
+            no:'1'
+          }else if(bingos[0]===1){
+            no:'2'
+          }if(bingos[0]===1){
+            no:'3'
+          }
+          record.push({
+            no:no,
+            data:ssqData[i].toString()+"==="+check
+          });
+          
+        }
+      }
+      return {
+        bingos: bingos,
+        record: record
+      };
+    }
+  </script>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-123784264-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'UA-123784264-2');
+  </script>
+</body>
+
+</html>
