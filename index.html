@@ -22,7 +22,7 @@
       ul, .result {width: 600px;margin-left:auto;margin-right: auto;}
       .result {margin-top: 15px;}
     }
-    #random-btn{ padding: 5px 20px;}
+    .btn{ padding: 5px 10px; min-width: 80px;}
   </style>
 </head>
 
@@ -34,7 +34,8 @@
     </div>
     <div class="result">
       <p v-for="(r,idx) in resultArr">{{priceName[idx]+": "+r+" 次"}}</p>
-      <p><button @click='randomResult' id="random-btn">随机</button></p>
+      <p><button @click='randomResult' class="btn">随机</button></p>
+      <p><button @click='clearResult' class="btn">清空</button></p>
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
@@ -76,8 +77,11 @@
             this.blueBall = this.setResult[6];
             this.$emit('result',this.blueBall);            
           }else{
+            this.redBalls = [];
             for(var i=0;i<6;i++){
-              this.redBalls.splice(i,1,this.setResult[i]);
+              if(this.setResult[i]){
+                this.redBalls.splice(i,1,this.setResult[i]);
+              }
             }
             this.$emit('result',this.redBalls);
           }
@@ -173,6 +177,9 @@
           }
           arr[6] = Math.ceil(16*Math.random());;
           this.setResult = arr;
+        },
+        clearResult:function(){
+          this.setResult = [];
         }
       },
       computed: {
