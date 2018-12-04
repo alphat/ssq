@@ -37,6 +37,9 @@
       <p><button @click='randomResult' class="btn">随机</button></p>
       <p><button @click='clearResult' class="btn">清空</button></p>
     </div>
+    <div class="result">数据范围：{{firstTime}} 至 {{lastTime}}，共 {{totalPhase}} 期</div>
+    
+
     <div class="result">
       <p v-for="(r,idx) in resultArr.bingos">{{priceName[idx]+": "+r+" 次"}}</p>
     </div>
@@ -144,18 +147,25 @@
         setResult:[],
         detailTxt:'',
         countArr:[0,0,0,0,0,0,0],
-        priceName: ["一等奖", "二等奖", "三等奖", "四等奖", "五等奖", "六等奖"]
+        priceName: ["一等奖", "二等奖", "三等奖", "四等奖", "五等奖", "六等奖"],
+        firstTime:'',
+        lastTime:'',
+        totalPhase:0
       },
       mounted: function () {
         var self = this;
         axios.get('https://bird.ioliu.cn/v1?url=http://www.17500.cn/getData/ssq.TXT?format=json&idx=1&n=1')
         .then(function (response) {
           var tmpArr = response.data.split("\n");
-          for(var i=0; i<tmpArr.length;i++){
+          var tmpArrLength = tmpArr.length;
+          for(var i=0; i<tmpArrLength;i++){
             var tmpArr2 = tmpArr[i].split(" ");
             //               期数         红1           红2          红3          红4          红5          红6          蓝1
             ssqData[i] = [tmpArr2[0]*1,tmpArr2[2]*1,tmpArr2[3]*1,tmpArr2[4]*1,tmpArr2[5]*1,tmpArr2[6]*1,tmpArr2[7]*1,tmpArr2[8]*1];
           }
+          self.firstTime = tmpArr[0].substring(8,18);
+          self.totalPhase = tmpArrLength;
+          self.lastTime = tmpArr[tmpArrLength-2].substring(8,18);
           self.pageLoadData = true;
         })
         .catch(function (error) {
