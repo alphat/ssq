@@ -17,7 +17,7 @@
     ul:last-child li button {border-color: #1E7DDF;}
     ul li.active button {background-color: #F00;color: #fff;}
     ul:last-child li.active button {background-color: #1E7DDF;}
-    .result{overflow: hidden; margin: 3%;font-size: 15px;}
+    .result{overflow: hidden; margin: 5% 3%;font-size: 15px;}
     .result p {display: inline-block;width: 33%;float: left; }
     @media (min-width: 600px){
       ul, .result {width: 600px;margin-left:auto;margin-right: auto;}
@@ -32,11 +32,11 @@
       <ball-list type="red" @result="onResult" :set-result="setResult"></ball-list>
       <ball-list type="blue" @result="onResult" :set-result="setResult"></ball-list>
     </div>
-    <div class="result">
+    <div class="result" style="margin-bottom:6%;">
       <p><button @click='randomResult' class="btn">随机</button></p>
       <p><button @click='clearResult' class="btn">清空</button></p>
     </div>
-    <div class="result">{{firstTime}} 至 {{lastTime}}，共 {{totalPhase}} 期</div>
+    <div class="result">数据范围: {{firstTime}}至{{lastTime}}，共{{totalPhase}}期</div>
     
 
     <div class="result">
