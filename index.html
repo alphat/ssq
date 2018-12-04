@@ -17,7 +17,8 @@
     ul:last-child li button {border-color: #1E7DDF;}
     ul li.active button {background-color: #F00;color: #fff;}
     ul:last-child li.active button {background-color: #1E7DDF;}
-    .result p {display: inline-block;width: 46%;float: left;padding: 2%;}
+    .result{overflow: hidden; margin: 3%;font-size: 15px;}
+    .result p {display: inline-block;width: 33%;float: left; }
     @media (min-width: 600px){
       ul, .result {width: 600px;margin-left:auto;margin-right: auto;}
       .result {margin-top: 15px;}
@@ -33,10 +34,13 @@
       <ball-list type="blue" @result="onResult" :set-result="setResult"></ball-list>
     </div>
     <div class="result">
-      <p v-for="(r,idx) in resultArr">{{priceName[idx]+": "+r+" 次"}}</p>
       <p><button @click='randomResult' class="btn">随机</button></p>
       <p><button @click='clearResult' class="btn">清空</button></p>
     </div>
+    <div class="result">
+      <p v-for="(r,idx) in resultArr.bingos">{{priceName[idx]+": "+r+" 次"}}</p>
+    </div>
+    <div class="result" v-html="resultArr.detailTxt"></div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
@@ -138,6 +142,7 @@
       data:{
         pageLoadData:false,
         setResult:[],
+        detailTxt:'',
         countArr:[0,0,0,0,0,0,0],
         priceName: ["一等奖", "二等奖", "三等奖", "四等奖", "五等奖", "六等奖"]
       },
@@ -148,6 +153,7 @@
           var tmpArr = response.data.split("\n");
           for(var i=0; i<tmpArr.length;i++){
             var tmpArr2 = tmpArr[i].split(" ");
+            //               期数         红1           红2          红3          红4          红5          红6          蓝1
             ssqData[i] = [tmpArr2[0]*1,tmpArr2[2]*1,tmpArr2[3]*1,tmpArr2[4]*1,tmpArr2[5]*1,tmpArr2[6]*1,tmpArr2[7]*1,tmpArr2[8]*1];
           }
           self.pageLoadData = true;
@@ -159,6 +165,7 @@
       methods: {
         onResult:function(result){
           if(typeof result === 'object'){
+            this.countArr = [];
             for (var i = 0; i < 6; i++) {
               var tmp = result[i];
               this.countArr.splice(i,1,(tmp ? tmp : 0));
@@ -184,45 +191,70 @@
       },
       computed: {
         resultArr: function () {
-          return checkCount(this.countArr);
+          return checkCount(this.countArr,this);
         }
       }
     })
 
-    function checkCount(check) {
+    function checkCount(check,self) {
+      console.log(check[6])
       var bingos = [0, 0, 0, 0, 0, 0];
+      var detailTxt = '';
       for (var i = 0; i < ssqData.length; i++) {
         var txt = " - ";
         var redCount = 0;
-        var blueBingo = ssqData[i][7] === check[6];
+        var blueBingo = check[6] ? ssqData[i][7] === check[6] : false;
+        
         for (var j = 1; j < ssqData[i].length - 1; j++) {
-          for (var k = 0; k < check.length - 1; k++) {
+          for (var k = 0; k < 6; k++) {
             if (ssqData[i][j] === check[k]) {
               txt += check[k] + ",";
-              redCount++
+              redCount++;
             }
           }
         }
         if (blueBingo) {
-          txt += check[6] + "|";
+          txt = txt.substring(0, txt.lastIndexOf(','))  + "|" + check[6] + "|";
         }
         var allCount = redCount + Number(blueBingo);
+        var p;
         if (allCount === 7) {
           bingos[0] = 1;                            // 7颗全中为一等奖
+          p = "一等奖";
         } else if (allCount === 6) {
-          blueBingo ? bingos[2]++ : bingos[1]++;    // 6颗红球为二等奖，5红1蓝为三等奖
+          if(blueBingo){
+            bingos[2]++;                            // 5红1蓝为三等奖
+            p = "三等奖";
+          }else{
+            bingos[1]++;                            // 6颗红球为二等奖
+            p = "二等奖";
+          }    
         } else if (allCount === 5) {
           bingos[3]++;                              // 中5颗为四等奖
+          p = "四等奖";
         } else if (allCount === 4) {
           bingos[4]++;                              // 中4颗为五等奖
         } else {
           blueBingo ? bingos[5]++ : null;           // 只中蓝球六等奖
         }
-        if (allCount > 3) {
-          console.log(ssqData[i].toString() + txt + "===" + allCount);
+        if(allCount >=4){
+          console.log(check)
+          console.log(allCount);
+        }
+        if (allCount > 4) {
+          detailTxt += p+": ";
+          detailTxt += ssqData[i][0]+' - ';
+          for(var j=1;j<7;j++){
+            detailTxt += '<span style="color:#c00">'+ssqData[i][j]+'</span> , ';
+          }
+          detailTxt += '<span style="color:#1E7DDF">'+ssqData[i][7]+'</span><br />'
+          //ssqData[i].toString() +"<br />";
         }
       }
-      return bingos;
+      return {
+        'bingos': bingos,
+        'detailTxt' :detailTxt
+      };
     }
   </script>
   <!-- Global site tag (gtag.js) - Google Analytics -->
