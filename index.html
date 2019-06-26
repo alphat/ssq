@@ -37,8 +37,6 @@
       <p><button @click='clearResult' class="btn">清空</button></p>
     </div>
     <div class="result">数据范围: {{firstTime}}至{{lastTime}}，共{{totalPhase}}期</div>
-    
-
     <div class="result">
       <p v-for="(r,idx) in resultArr.bingos">{{priceName[idx]+": "+r+" 次"}}</p>
     </div>
@@ -174,7 +172,6 @@
       methods: {
         onResult:function(result){
           if(typeof result === 'object'){
-            this.countArr = [];
             for (var i = 0; i < 6; i++) {
               var tmp = result[i];
               this.countArr.splice(i,1,(tmp ? tmp : 0));
@@ -206,7 +203,6 @@
     })
 
     function checkCount(check,self) {
-      console.log(check[6])
       var bingos = [0, 0, 0, 0, 0, 0];
       var detailTxt = '';
       for (var i = 0; i < ssqData.length; i++) {
@@ -247,8 +243,8 @@
           blueBingo ? bingos[5]++ : null;           // 只中蓝球六等奖
         }
         if(allCount >=4){
-          console.log(check)
-          console.log(allCount);
+          //console.log(check)
+          //console.log(allCount);
         }
         if (allCount > 4) {
           detailTxt += p+": ";
@@ -257,7 +253,6 @@
             detailTxt += '<span style="color:#c00">'+ssqData[i][j]+'</span> , ';
           }
           detailTxt += '<span style="color:#1E7DDF">'+ssqData[i][7]+'</span><br />'
-          //ssqData[i].toString() +"<br />";
         }
       }
       return {
@@ -266,7 +261,6 @@
       };
     }
   </script>
-  <!-- Global site tag (gtag.js) - Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-123784264-2"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
