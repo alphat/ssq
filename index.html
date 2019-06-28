@@ -178,6 +178,7 @@
               var tmp = result[i];
               this.countArr.splice(i,1,(tmp ? tmp : 0));
             }
+            this.countArr.splice(6,1);
           }else{
             this.countArr.splice(6,1,result);
           }
@@ -199,12 +200,14 @@
       },
       computed: {
         resultArr: function () {
-          return checkCount(this.countArr,this);
+          return checkCount(this.countArr);
         }
       }
     })
-
-    function checkCount(check,self) {
+    function checkCount(check) {
+      if(check.length<7){
+        return {'bingos': '','detailTxt' :''}
+      }
       var bingos = [0, 0, 0, 0, 0, 0];
       var detailTxt = '';
       for (var i = 0; i < ssqData.length; i++) {
@@ -226,7 +229,7 @@
         var allCount = redCount + Number(blueBingo);
         var p;
         if (allCount === 7) {
-          bingos[0] = 1;                            // 7颗全中为一等奖
+          bingos[0]++;                            // 7颗全中为一等奖
           p = "一等奖";
         } else if (allCount === 6) {
           if(blueBingo){
@@ -244,17 +247,14 @@
         } else {
           blueBingo ? bingos[5]++ : null;           // 只中蓝球六等奖
         }
-        if(allCount >=4){
-          //console.log(check)
-          //console.log(allCount);
-        }
         if (allCount > 4) {
           detailTxt += p+": ";
-          detailTxt += ssqData[i][0]+' - ';
+          detailTxt += ssqData[i][0]+' - <span style="color:#c00">';
+          var redTxt = '';
           for(var j=1;j<7;j++){
-            detailTxt += '<span style="color:#c00">'+ssqData[i][j]+'</span> , ';
+            redTxt+=ssqData[i][j]+", "
           }
-          detailTxt += '<span style="color:#1E7DDF">'+ssqData[i][7]+'</span><br />'
+          detailTxt = detailTxt + redTxt + '</span><span style="color:#1E7DDF">'+ssqData[i][7]+'</span><br />'
         }
       }
       return {
