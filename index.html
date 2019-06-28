@@ -151,7 +151,9 @@
       },
       mounted: function () {
         var self = this;
-        axios.get('https://bird.ioliu.cn/v1?url=http://www.17500.cn/getData/ssq.TXT?format=json&idx=1&n=1')
+        var ssqDataUrl = (document.domain==='localhost') ? './ssq.txt' :
+                                                           'https://bird.ioliu.cn/v1?url=http://www.17500.cn/getData/ssq.TXT?format=json&idx=1&n=1';
+        axios.get(ssqDataUrl)
         .then(function (response) {
           var tmpArr = response.data.split("\n");
           var tmpArrLength = tmpArr.length;
