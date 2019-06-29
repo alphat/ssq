@@ -58,7 +58,7 @@
       methods: {
         onSelectBall: function (num, type) {
           if (type === "blue") {
-            this.blueBall = (this.blueBall === num) ? '' : num;
+            this.blueBall = (this.blueBall === num) ? 0 : num;
             this.$emit('result',this.blueBall);
           } else {
             var ol = this.redBalls.length;
@@ -195,7 +195,7 @@
           this.setResult = arr;
         },
         clearResult:function(){
-          this.setResult = [];
+          this.setResult = [0,0,0,0,0,0,0];
         }
       },
       computed: {
