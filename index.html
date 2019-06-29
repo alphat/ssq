@@ -207,20 +207,15 @@
       var bingos = [0, 0, 0, 0, 0, 0];
       var detailTxt = '';
       for (var i = 0; i < ssqData.length; i++) {
-        var txt = " - ";
         var redCount = 0;
         var blueBingo = check[6] ? ssqData[i][7] === check[6] : false;
 
         for (var j = 1; j < ssqData[i].length - 1; j++) {
           for (var k = 0; k < 6; k++) {
             if (ssqData[i][j] === check[k]) {
-              txt += check[k] + ",";
               redCount++;
             }
           }
-        }
-        if (blueBingo) {
-          txt = txt.substring(0, txt.lastIndexOf(',')) + "|" + check[6] + "|";
         }
         var allCount = redCount + Number(blueBingo);
         var priceNo;
