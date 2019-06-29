@@ -200,11 +200,11 @@
       },
       computed: {
         resultArr: function () {
-          return checkCount(this.countArr);
+          return checkResult(this.countArr);
         }
       }
     })
-    function checkCount(check) {
+    function checkResult(check) {
       var bingos = [0, 0, 0, 0, 0, 0];
       var detailTxt = '';
       for (var i = 0; i < ssqData.length; i++) {
