@@ -157,7 +157,7 @@
         .then(function (response) {
           var tmpArr = response.data.split("\n");
           var tmpArrLength = tmpArr.length;
-          for(var i=0; i<tmpArrLength;i++){
+          for(var i=0; i<tmpArrLength-1;i++){
             var tmpArr2 = tmpArr[i].split(" ");
             //               期数         红1           红2          红3          红4          红5          红6          蓝1
             ssqData[i] = [tmpArr2[0]*1,tmpArr2[2]*1,tmpArr2[3]*1,tmpArr2[4]*1,tmpArr2[5]*1,tmpArr2[6]*1,tmpArr2[7]*1,tmpArr2[8]*1];
