@@ -205,7 +205,7 @@
       }
     })
     function checkCount(check) {
-      if(check.length<7){
+      if(!check[6]){
         return {'bingos': '','detailTxt' :''}
       }
       var bingos = [0, 0, 0, 0, 0, 0];
