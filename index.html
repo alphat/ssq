@@ -227,15 +227,11 @@
         if (allCount === 7) {
           priceNo = 0;                            // 7颗全中为一等奖          
         } else if (allCount === 6) {
-          if(blueBingo){
-            priceNo = 2;                            // 5红1蓝为三等奖            
-          }else{
-            priceNo = 1;                            // 6颗红球为二等奖            
-          }    
+          priceNo = blueBingo ? 2 : 1;            // 5红1蓝为三等奖 : 6颗红球为二等奖          
         } else if (allCount === 5) {
-          priceNo = 3;                              // 中5颗为四等奖          
+          priceNo = 3;                            // 中5颗为四等奖          
         } else if (allCount === 4) {
-          priceNo = 4;                              // 中4颗为五等奖
+          priceNo = 4;                            // 中4颗为五等奖
         } else {
           priceNo = blueBingo ? 5 : '';           // 只中蓝球六等奖
         }
