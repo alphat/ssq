@@ -220,7 +220,7 @@
           }
         }
         if (blueBingo) {
-          txt = txt.substring(0, txt.lastIndexOf(','))  + "|" + check[6] + "|";
+          txt = txt.substring(0, txt.lastIndexOf(',')) + "|" + check[6] + "|";
         }
         var allCount = redCount + Number(blueBingo);
         var priceNo;
@@ -238,12 +238,12 @@
         bingos[priceNo]++
         var priceTitle = root.priceName[priceNo]
         if (allCount > 4) {
-          detailTxt += priceTitle+": " + ssqData[i][0]+' - <span style="color:#c00">';
+          detailTxt += priceTitle + ": " + ssqData[i][0] + ' - <span style="color:#c00">';
           var redTxt = '';
-          for(var j=1;j<7;j++){
-            redTxt+=ssqData[i][j]+", ";
+          for (var j = 1; j < 7; j++) {
+            redTxt += ssqData[i][j] + ", ";
           }
-          detailTxt += redTxt + '</span><span style="color:#1E7DDF">'+ssqData[i][7]+'</span><br />';
+          detailTxt += redTxt + '</span><span style="color:#1E7DDF">' + ssqData[i][7] + '</span><br />';
         }
       }
       return {
