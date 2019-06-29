@@ -137,7 +137,7 @@
       template: '<li :class="liActive" @click="selectBall(num)"><button>{{num}}</button></li>'
     })
 
-    new Vue({
+    var root = new Vue({
       el: '#app',
       data:{
         pageLoadData:false,
