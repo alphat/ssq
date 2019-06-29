@@ -224,28 +224,26 @@
           txt = txt.substring(0, txt.lastIndexOf(','))  + "|" + check[6] + "|";
         }
         var allCount = redCount + Number(blueBingo);
-        var p;
+        var priceNo;
         if (allCount === 7) {
-          bingos[0]++;                            // 7颗全中为一等奖
-          p = "一等奖";
+          priceNo = 0;                            // 7颗全中为一等奖          
         } else if (allCount === 6) {
           if(blueBingo){
-            bingos[2]++;                            // 5红1蓝为三等奖
-            p = "三等奖";
+            priceNo = 2;                            // 5红1蓝为三等奖            
           }else{
-            bingos[1]++;                            // 6颗红球为二等奖
-            p = "二等奖";
+            priceNo = 1;                            // 6颗红球为二等奖            
           }    
         } else if (allCount === 5) {
-          bingos[3]++;                              // 中5颗为四等奖
-          p = "四等奖";
+          priceNo = 3;                              // 中5颗为四等奖          
         } else if (allCount === 4) {
-          bingos[4]++;                              // 中4颗为五等奖
+          priceNo = 4;                              // 中4颗为五等奖
         } else {
-          blueBingo ? bingos[5]++ : null;           // 只中蓝球六等奖
+          priceNo = blueBingo ? 5 : '';           // 只中蓝球六等奖
         }
+        bingos[priceNo]++
+        var priceTitle = root.priceName[priceNo]
         if (allCount > 4) {
-          detailTxt += p+": ";
+          detailTxt += priceTitle+": ";
           detailTxt += ssqData[i][0]+' - <span style="color:#c00">';
           var redTxt = '';
           for(var j=1;j<7;j++){
