@@ -121,20 +121,7 @@
           }
         }
       },
-      watch:{
-        "blueBall":function(){
-          this.liActive = (this.blueBall === this.num)?'active':'';
-        },
-        "redBalls":function(){
-          this.liActive = "";
-          for(var i in this.redBalls){
-            if(this.redBalls[i] === this.num){
-              this.liActive='active';
-            };
-          }
-        }
-      },
-      template: '<li :class="liActive" @click="selectBall(num)"><button>{{num}}</button></li>'
+      template: `<li :class="{ active : ((blueBall=== this.num || this.redBalls.indexOf(this.num)>=0)) }" @click="selectBall(num)"><button>{{num}}</button></li>`
     })
 
     var root = new Vue({
