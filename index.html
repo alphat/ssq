@@ -48,7 +48,6 @@
   <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios@0.18.0/dist/axios.js"></script>
   <script>
-    var ssqData = [];
     Vue.component('ball-list', {
       props: ['type','setResult'],
       data: function () {
@@ -124,10 +123,10 @@
       },
       template: `<li :class="{ active : ((blueBall=== this.num || this.redBalls.indexOf(this.num)>=0)) }" @click="selectBall(num)"><button>{{num}}</button></li>`
     })
-
     var root = new Vue({
       el: '#app',
       data:{
+        ssqData:[],
         setResult:[],
         detailTxt:'',
         countArr:[0,0,0,0,0,0,0],
@@ -145,7 +144,7 @@
           for(var i=0; i<tmpArrLength-1;i++){
             var tmpArr2 = tmpArr[i].split(" ");
             //               期数         红1           红2          红3          红4          红5          红6          蓝1
-            ssqData[i] = [tmpArr2[0]*1,tmpArr2[2]*1,tmpArr2[3]*1,tmpArr2[4]*1,tmpArr2[5]*1,tmpArr2[6]*1,tmpArr2[7]*1,tmpArr2[8]*1];
+            self.ssqData[i] = [tmpArr2[0]*1,tmpArr2[2]*1,tmpArr2[3]*1,tmpArr2[4]*1,tmpArr2[5]*1,tmpArr2[6]*1,tmpArr2[7]*1,tmpArr2[8]*1];
           }
           self.dataRangeTxt = tmpArr[0].substring(8,18)+" 至 "+tmpArr[tmpArrLength-2].substring(8,18)+"，共"+(tmpArrLength-1)+"期";
         })
@@ -177,57 +176,59 @@
         },
         clearResult:function(){
           this.setResult = [0,0,0,0,0,0,0];
+        },
+        checkResult:function(){
+          var ssqData = this.ssqData;
+          var countArr = this.countArr;
+          var bingos = [0, 0, 0, 0, 0, 0];
+          var detailTxt = '';
+          for (var i = 0; i < ssqData.length; i++) {
+            var redCount = 0;
+            var blueBingo = countArr[6] ? ssqData[i][7] === countArr[6] : false;
+
+            for (var j = 1; j < ssqData[i].length - 1; j++) {
+              for (var k = 0; k < 6; k++) {
+                if (ssqData[i][j] === countArr[k]) {
+                  redCount++;
+                }
+              }
+            }
+            var allCount = redCount + Number(blueBingo);
+            var priceNo;
+            if (allCount === 7) {
+              priceNo = 0;                            // 7颗全中为一等奖          
+            } else if (allCount === 6) {
+              priceNo = blueBingo ? 2 : 1;            // 5红1蓝为三等奖 : 6颗红球为二等奖          
+            } else if (allCount === 5) {
+              priceNo = 3;                            // 中5颗为四等奖          
+            } else if (allCount === 4) {
+              priceNo = 4;                            // 中4颗为五等奖
+            } else {
+              priceNo = blueBingo ? 5 : '';           // 只中蓝球六等奖
+            }
+            bingos[priceNo]++
+            var priceTitle = root.priceName[priceNo]
+            if (allCount > 4) {
+              detailTxt += priceTitle + ": " + ssqData[i][0] + ' - <span style="color:#c00">';
+              var redTxt = '';
+              for (var j = 1; j < 7; j++) {
+                redTxt += ssqData[i][j] + ", ";
+              }
+              detailTxt += redTxt + '</span><span style="color:#1E7DDF">' + ssqData[i][7] + '</span><br />';
+            }
+          }
+          return {
+            'bingos':     bingos,
+            'detailTxt':  detailTxt
+          };
         }
       },
       computed: {
         resultArr: function () {
-          return checkResult(this.countArr);
+          return this.checkResult();
         }
       }
     })
-    function checkResult(check) {
-      var bingos = [0, 0, 0, 0, 0, 0];
-      var detailTxt = '';
-      for (var i = 0; i < ssqData.length; i++) {
-        var redCount = 0;
-        var blueBingo = check[6] ? ssqData[i][7] === check[6] : false;
-
-        for (var j = 1; j < ssqData[i].length - 1; j++) {
-          for (var k = 0; k < 6; k++) {
-            if (ssqData[i][j] === check[k]) {
-              redCount++;
-            }
-          }
-        }
-        var allCount = redCount + Number(blueBingo);
-        var priceNo;
-        if (allCount === 7) {
-          priceNo = 0;                            // 7颗全中为一等奖          
-        } else if (allCount === 6) {
-          priceNo = blueBingo ? 2 : 1;            // 5红1蓝为三等奖 : 6颗红球为二等奖          
-        } else if (allCount === 5) {
-          priceNo = 3;                            // 中5颗为四等奖          
-        } else if (allCount === 4) {
-          priceNo = 4;                            // 中4颗为五等奖
-        } else {
-          priceNo = blueBingo ? 5 : '';           // 只中蓝球六等奖
-        }
-        bingos[priceNo]++
-        var priceTitle = root.priceName[priceNo]
-        if (allCount > 4) {
-          detailTxt += priceTitle + ": " + ssqData[i][0] + ' - <span style="color:#c00">';
-          var redTxt = '';
-          for (var j = 1; j < 7; j++) {
-            redTxt += ssqData[i][j] + ", ";
-          }
-          detailTxt += redTxt + '</span><span style="color:#1E7DDF">' + ssqData[i][7] + '</span><br />';
-        }
-      }
-      return {
-        'bingos':     bingos,
-        'detailTxt':  detailTxt
-      };
-    }
   </script>
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-123784264-2"></script>
   <script>
