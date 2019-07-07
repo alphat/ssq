@@ -135,9 +135,17 @@
       },
       mounted: function () {
         var self = this;
-        var ssqDataUrl = (document.domain==='localhost') ? './ssq.txt' :
-                                                           'https://bird.ioliu.cn/v1?url=http://www.17500.cn/getData/ssq.TXT?format=json&idx=1&n=1';
-        axios.get(ssqDataUrl)
+        var now = new Date();
+        var today = now.getFullYear()+"-" + (now.getMonth()+1) + "-" + now.getDate();
+        if(typeof localStorage !== 'undefined' && localStorage.ssqData){
+          var ls = JSON.parse(localStorage.ssqData);
+          if(today === ls.date){
+            self.ssqData = ls.data;
+            self.dataRangeTxt = ls.txt;
+            return;
+          }
+        }
+        axios.get('https://bird.ioliu.cn/v1?url=http://www.17500.cn/getData/ssq.TXT?format=json&idx=1&n=1')
         .then(function (response) {
           var tmpArr = response.data.split("\n");
           var tmpArrLength = tmpArr.length;
@@ -147,6 +155,13 @@
             self.ssqData[i] = [tmpArr2[0]*1,tmpArr2[2]*1,tmpArr2[3]*1,tmpArr2[4]*1,tmpArr2[5]*1,tmpArr2[6]*1,tmpArr2[7]*1,tmpArr2[8]*1];
           }
           self.dataRangeTxt = tmpArr[0].substring(8,18)+" 至 "+tmpArr[tmpArrLength-2].substring(8,18)+"，共"+(tmpArrLength-1)+"期";
+          if (typeof localStorage !== 'undefined') {
+            localStorage.ssqData = JSON.stringify({
+              date: today,
+              data: self.ssqData,
+              txt: self.dataRangeTxt
+            })
+          }
         })
         .catch(function (error) {
           alert(error);
