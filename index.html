@@ -123,7 +123,7 @@
       },
       template: `<li :class="{ active : ((blueBall=== this.num || this.redBalls.indexOf(this.num)>=0)) }" @click="selectBall(num)"><button>{{num}}</button></li>`
     })
-    var root = new Vue({
+    new Vue({
       el: '#app',
       data:{
         ssqData:[],
@@ -221,7 +221,7 @@
               priceNo = blueBingo ? 5 : '';           // 只中蓝球六等奖
             }
             bingos[priceNo]++
-            var priceTitle = root.priceName[priceNo]
+            var priceTitle = this.priceName[priceNo]
             if (allCount > 4) {
               detailTxt += priceTitle + ": " + ssqData[i][0] + ' - <span style="color:#c00">';
               var redTxt = '';
