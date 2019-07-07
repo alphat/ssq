@@ -194,14 +194,10 @@
         },
         randomResultInterval:function(){
           var self = this;
-          this.randomResult();
-          setTimeout(function(){
-            //self.clearResult();
-          })
-          self.randomCount++;
-          this.randomInt = setTimeout(function(){
-            self.randomResultInterval();
-          })
+          this.randomInt = setInterval(function(){
+            self.randomResult();
+            self.randomCount++;
+          },1)
         },
         clearResult:function(){
           this.setResult = [];
@@ -224,13 +220,13 @@
       },
       computed: {
         resultArr: function () {
-          var result = checkCount(this.countArr);
+          var result = checkCount(this.countArr,this.randomCount);
           if(result.record.length>=1){
             for(var i in result.record){
               this.tempResultsArr.push((result.record[i].data));  
               this.tempResultsArr = this.tempResultsArr.filter(function(element,index,self){
                 return self.indexOf(element) === index;
-              });        
+              });
             }
             this.resultPercent = this.tempResultsArr.length / this.randomCount
             //this.ranInterBtnTxt='继续';
@@ -277,20 +273,19 @@
         } else {
           blueBingo ? bingos[5]++ : null;           // 只中蓝球六等奖
         }
-        if (allCount > 5) {
+        if (allCount > 6) {
           var no;
           if(bingos[0]===1){
-            no:'1'
-          }else if(bingos[0]===1){
-            no:'2'
-          }if(bingos[0]===1){
-            no:'3'
+            no='1'
+          }else if(bingos[1]===1){
+            no='2'
+          }else if(bingos[2]===1){
+            no='3'
           }
           record.push({
             no:no,
-            data:ssqData[i].toString()+"==="+check
+            data:ssqData[i].toString()+"==="+check+"==="+no
           });
-          
         }
       }
       return {
