@@ -209,7 +209,7 @@
               }
             }
             fetch('https://bird.ioliu.cn/v1?url=http://www.17500.cn/getData/ssq.TXT?format=json&idx=1&n=1')
-              .then((response) => response.text())
+              .then((res) => res.json())
               .then((res) => {
                 const data = res.split('\n');
                 const len = data.length;
