@@ -183,12 +183,20 @@
               }
               var priceTitle = infos.priceName[priceNo];
               if (allCount > 4) {
-                detailTxt += priceTitle + ': ' + infos.history[i][0] + ' - <span style="color:#c00">';
+                detailTxt += `${priceTitle}: ${infos.history[i][0]} - <span style="color:#c00">`;
                 var redTxt = '';
                 for (var j = 2; j < 8; j++) {
-                  redTxt += infos.history[i][j] + ', ';
+                  let tmpTxt = infos.history[i][j];
+                  if(redBall.value.includes(+tmpTxt)){
+                    tmpTxt = `<b>${tmpTxt}</b>`
+                  }
+                  redTxt += tmpTxt + ', ';
                 }
-                detailTxt += redTxt + '</span><span style="color:#1E7DDF">' + infos.history[i][8] + '</span><br />';
+                let blueTxt = infos.history[i][8];
+                if(blueBingo){
+                  blueTxt = `<b>${blueTxt}</b>`
+                }
+                detailTxt += `${redTxt}</span><span style="color:#1e7ddf"></span>${blueTxt}<br />`;
               }
             }
             return {
@@ -217,9 +225,7 @@
                   const line = data[i].split(' ');
                   infos.history.push(line.splice(0, 9));
                 }
-                infos.dataRangeTxt = `${data[0].substring(8, 18)} 至 ${data[len - 2].substring(8, 18)}，共 ${
-                  len - 1
-                }期`;
+                infos.dataRangeTxt = `${data[0].substring(8, 18)} 至 ${data[len-2].substring(8, 18)}，共 ${len-1}期`;
                 if (typeof localStorage !== 'undefined') {
                   localStorage.recode = JSON.stringify({
                     date: today,
