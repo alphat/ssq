@@ -80,7 +80,7 @@
         margin: 0 20px;
       }
     </style>
-    <script src="https://unpkg.com/vue@next"></script>
+    <script src="https://cdn.staticfile.net/vue/3.3.4/vue.global.min.js"></script>
   </head>
   <body>
     <div id="app">
@@ -216,8 +216,8 @@
                 return;
               }
             }
-            fetch('https://bird.ioliu.cn/v1?url=http://www.17500.cn/getData/ssq.TXT?format=json&idx=1&n=1')
-              .then((res) => res.json())
+            fetch('https://alphatang.cn/api/ssq-data')
+              .then((res) => res.text())
               .then((res) => {
                 const data = res.split('\n');
                 const len = data.length;
